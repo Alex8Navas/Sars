@@ -1,0 +1,59 @@
+# Vacuna de Pfizer
+
+library(gsDesign)
+
+# EficaciaVacuna = 100(1 - IRR) = 100(1 - (cv/nv)/(cp/np))
+# Incidence Rate Ratio (IRR) = Ratio de Incidencia Post-vacunación/Ratio de Incidencia Pre-Vacunación 
+n = 38955 # Número de sujetos del estudio de Pfizer. 
+nv = round(n/2) # Número de sujetos vacunados. Según Pfizer, la mitad. 
+nv
+np = n - nv # Número de sujetos que recibió el placebo. 
+np
+
+# 94 es el número de sujetos que enfermeraron en general.
+cv = 9 # Positivos en Sars-Cov2 tras la vacuna asumiendo la hipótesis de que la vacuna tiene más del 90% de efectividad.  
+cp = 94 - cv  # Número de sujetos que se supone que enfermaron habiendo consumido el placebo. 
+
+
+round(100*cp/np, 2) # Porcentaje de sujetos que enfermaron consumiendo el placebo. 
+round(100*cv/nv, 2) # Porcentaje de sujetos que enfermaron habiendo sido vacunados.
+
+# Incidence Rate Ratio (%). 
+IRR = 100*(cv/nv)/(cp/np)
+IRR
+
+# Eficacia de la Vacuna (%).
+VE = round((100 - IRR), 3)
+VE
+
+
+# Vaccinated population (ARV).
+ARV = cv/nv
+# Unvaccinated population (ARU).
+ARU = cp/np
+
+# Intervalos de Confianza del IRR. 
+ciLower = exp(log(IRR/100) - 1.96 * sqrt((1-ARV)/cv + (1-ARU)/cp)) 
+ciUpper = exp(log(IRR/100) + 1.96 * sqrt((1-ARV)/cv + (1-ARU)/cp)) 
+ciIRR = round(100*c(ciLower, ciUpper), 3)
+ciIRR
+
+# Intervalo de Confianza de la Eficacia de la Vacuna. 
+ciVE = round(100*rev(1 - ciIRR/100), 3)
+ciVE
+
+# Para un cálculo más preciso del intervalo de confianza se usa el paquete gsDesign. 
+ciIRRAcc = ciBinomial(cv, cp, nv, np, scale = "RR")
+round(ciIRRAcc*100, 3)
+ciVEAcc = rev(1 - ciIRRAcc)
+round(100*ciVEAcc, 3)
+
+
+cv = 5; cp = 94-cv
+VE = 1-(cv/nv)/(cp/np)
+round(VE*100,1)
+
+
+IRR.ci = ciBinomial(cv,cp,nv,np,scale = "RR")
+VE.ci = rev(1-IRR.ci)
+round(100*VE.ci,1)
